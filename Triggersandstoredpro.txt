@@ -1,0 +1,116 @@
+Book Tickets Stored Procedure
+===========================
+ALTER PROCEDURE [dbo].[BookTicket]
+    @passid int,
+    @passname varchar(50),
+    @age int,
+    @flightid int,
+    @ticketno int output
+AS
+declare
+@tno int,
+@vacant_seats int
+begin
+select @vacant_seats=vacantseats from FlightBooking where FlightID=@flightid
+if(@vacant_seats >0)
+begin
+select @tno=isnull(max(ticketno),0) +1 from passengers
+where flightid=@flightid;
+if(@tno=1)
+begin
+select @tno=concat(@flightid,'00',@tno)
+select @ticketno=@tno
+
+	Insert into Passengers values (@passid,@passname,@age,@flightid,@tno);
+	end
+	else
+	begin
+	select @tno=max(ticketno) +1 from passengers
+where flightid=@flightid;
+
+
+Insert into Passengers values (@passid,@passname,@age,@flightid,@tno);
+
+	end
+	select @ticketno=@tno
+end
+
+
+end
+
+
+CancelTicket Stored Prrocedure
+===============================
+USE [FlightDB]
+GO
+/****** Object:  StoredProcedure [dbo].[CancelTicket]    Script Date: 02-11-2021 17:54:24 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+ALTER PROCEDURE [dbo].[CancelTicket] 
+	-- Add the parameters for the stored procedure here
+	@passid int
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	delete from Passengers where PassId=@passid
+END
+
+
+
+BookTicket Trigger
+=================
+USE [FlightDB]
+GO
+/****** Object:  Trigger [dbo].[updateSeats]    Script Date: 02-11-2021 17:55:09 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER trigger [dbo].[updateSeats]
+on [dbo].[Passengers]
+after insert
+as
+declare
+@f_id int
+begin
+select  @f_id=flightid from inserted i
+update FlightBooking
+set VacantSeats=VacantSeats-1
+where FlightID=@f_id;
+select @f_id=flightid from deleted i
+end;
+
+CancelTicket trigger
+====================
+USE [FlightDB]
+GO
+/****** Object:  Trigger [dbo].[DeletedSeats]    Script Date: 02-11-2021 17:55:42 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER trigger [dbo].[DeletedSeats]
+on [dbo].[Passengers]
+after delete
+as
+declare
+@f_id int
+begin
+select  @f_id=flightid from deleted i
+update FlightBooking
+set VacantSeats=VacantSeats+1
+where FlightID=@f_id;
+end;
