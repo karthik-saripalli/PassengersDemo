@@ -1,0 +1,36 @@
+USE [FlightDB]
+GO
+
+/****** Object:  Table [dbo].[Passengers]    Script Date: 03-11-2021 18:20:21 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[Passengers](
+	[PassId] [int] NOT NULL,
+	[PassName] [varchar](50) NULL,
+	[PassAge] [int] NULL,
+	[FlightId] [int] NULL,
+	[TicketNo] [int] NULL,
+ CONSTRAINT [PK_Passengers] PRIMARY KEY CLUSTERED 
+(
+	[PassId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+ALTER TABLE [dbo].[Passengers]  WITH CHECK ADD  CONSTRAINT [FK_Passengers_Flights] FOREIGN KEY([FlightId])
+REFERENCES [dbo].[Flights] ([FlightId])
+GO
+
+ALTER TABLE [dbo].[Passengers] CHECK CONSTRAINT [FK_Passengers_Flights]
+GO
